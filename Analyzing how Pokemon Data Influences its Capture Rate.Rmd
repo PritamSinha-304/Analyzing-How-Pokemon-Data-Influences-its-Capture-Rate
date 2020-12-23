@@ -1,0 +1,467 @@
+---
+title: "Analyzing How Pokemon Data Influences its Capture Rate"
+author: "Pritam Sinha"
+date: "22/12/2020"
+output: pdf_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(kableExtra)
+library(graphics)
+library(DT)
+library(tinytex)
+
+# Read in the data from the cleaned CSV file 
+
+pokemon_data <- read_csv("pokemon data.csv")
+
+```
+
+The code and data supporting this analysis is available at:
+
+https://github.com/PritamSinha-304/Analyzing-How-Pokemon-Data-Influences-its-Capture-Rate
+
+
+# Abstract 
+
+Pokemon are fictional characters that can be caught from popular video games made by Nintendo. When catching Pokemon, there are a lot of variables that come into play, and some of these variables influence the capture rate of a Pokemon much more than others. Using a multiple linear regression, I have determined how the capture rate is influenced by a Pokemon's characteristics. Furthermore, I looked into how the mean and variance of Pokemon capture rate differs with respect to other Pokemon attributes. 
+
+# Introduction 
+
+Many video games from the Pokemon series embody the concept of catching wild Pokemon. The concept of catching Pokemon is much more complex as the capture rates of Pokemon are all unique. As a result, this analysis will determine how Pokemon characteristics influence their capture rate. Using a multiple linear regression, I was able to dive deeper into the capture rates of Pokemon and understand how much a Pokemon's battle statistics influenced their capture rate. The most important findings are that a Pokemon's health points are the most important predictor of capture rate, legendary Pokemon are harder to capture than non-legendary Pokemon and finally, dragon type Pokemon are the most difficult to capture. This findings are of great importance as they can help players of these video games understand why some Pokemon are harder to catch when compared to others. Overall, this analysis will go over what data I have, the modeling, a detailed look into the results of my findings as well as what can be taken away. The goal of this analysis is to help players of these popular video games be more informed before attempting to capture a Pokemon of their choice.
+
+# Data
+
+The data that was utilized for this analysis is called "The Complete Pokemon Dataset" and was provided by Rounak Banik. He provided his data on Kaggle for the public to view. 
+
+This data was was cleaned to omit many of the variables that I chose not to analyze. Some other adjustments that were made was to rename some of the variables for clarity and make the location variable values correspond to its select region rather than a number. 
+
+The population of the data was 801 Pokemon. Whereas, the sample I am analyzing has 780 Pokemon. As a result of Pokemon being from a fictional world. This Pokemon data was taken from a fictional encyclopedia called the "Pokedex". This fictional encyclopedia is full of all the information of every Pokemon. As a result of this, all the data provided by Banik was available with little to no missing values. An important note is due to the nature of Pokemon being a video game the 21 Pokemon that were omitted were "special" cases of Pokemon which did not have data on purpose. As a result, all these special cases were removed to avoid extreme outliers which could influence my findings. 
+
+There are many variables used in my analysis, below I will break down what each variable is and what it represents. 
+
+The "Pokedex Number" variable represents the ID number of each Pokemon. These ID numbers are listed in the Pokedex and  each number corresponds to its own Pokemon.
+
+The "Capture Rate" variable is the response variable in this analysis. This variable measures the rate at Which a Pokemon is caught. A low value for this variable means a Pokemon is very difficult to catch, and vice versa for a very high value. This is a discrete variable
+
+The "Type 1" variable is the primary type of a Pokemon. Every Pokemon has a type and there are a total of 18 unique types. Pokemon types are representative of elements and each Pokemon belongs to a type group. This is a categorical variable. 
+
+The "Type 2" variable is the secondary type of Pokemon. Only some Pokemon have a second type in addition to their primary type. Not all Pokemon have a secondary type. The type variables of Pokemon are categorical. 
+
+The "Health Points" variable is a discrete variable which represents the total amount of health an individual Pokemon can have. This variable is known as a "battle statistic" to the video game players.
+
+The "Attack" variable is a discrete variable which represents the total number of the attack statistic an individual Pokemon can have. This variable is known as a "battle statistic" to the video game players.
+
+The "Defense" variable is a discrete variable which represents the total number of the defense statistic an individual Pokemon can have. This variable is known as a "battle statistic" to the video game players.
+
+The " Special Attack" variable is a discrete variable which represents the total number of the special attack statistic an individual Pokemon can have. The special attack variable is unique from the attack variable as it corresponds to different types of attacks Pokemon can preform. This variable is known as a "battle statistic" to the video game players.
+
+The " Special Defense" variable is a discrete variable which represents the total number of the special defense statistic an individual Pokemon can have. The special defense variable is unique from the defense variable as it corresponds to a different form of defense Pokemon have. This variable is known as a "battle statistic" to the video game players.
+
+The "Speed" variable is a discrete variable which represents the total number of the speed statistic an individual Pokemon can have. This variable is known as a "battle statistic" to the video game players.
+
+The "Height" variable is a discrete variable which represents the height of a Pokemon. This variable is recorded in metres. 
+
+The "Weight" variable is a discrete variable which represents the weight of a Pokemon. This variable is recorded in kilograms.
+
+The "Location" variable is a categorical variable which represents what region a Pokemon is native to. 
+
+The "Legendary" variable is a binary variable which takes on a value of 1 if a Pokemon is of legendary class and a value of 0 otherwise.  
+
+```{r, echo = FALSE}
+#data %>%
+ # kbl() %>%
+  #kable_styling()
+# Plotting the data 
+plot(pokemon_data$pokedex_number, pokemon_data$capture_rate, main = "Capture Rate (Figure 1)", xlab = "Pokedex Number", ylab = "Pokemon Capture Rate")
+
+```
+
+Figure 1 shows how the capture rate varies among the Pokedex numbers of Pokemon. This is clear that the sample I am analyzing is representative of Pokemon of all capture rates. 
+
+# Modelling 
+
+The full model i will be analyzing for the multiple linear regression of capture rate is shown in shown a a mathematical equation below. This model was created using the R software. 
+
+$\hat{Y}_{capturerate} = \beta_0+ \beta_{1}x_{healthpoints} + \beta_{2}x_{attack}+\beta_{3}x_{defense}+\beta_{4}x_{specialattack} + \beta_{5}x_{specialdefense} + \beta_{6}x_{speed}+ \beta_{7}x_{height} + \beta_{8}x_{weight} + \beta_{9}x_{legendary} + \epsilon$
+
+```{r, include = FALSE, echo = FALSE}
+# Multiple Linear Regression 
+
+mlr <- lm(capture_rate ~ health_points + attack + defense + special_attack + special_defence + speed + height + weight + is_legendary, pokemon_data)
+        
+summary(mlr)
+
+```
+
+Multiple linear regression was chosen since most of the variables are discrete and the regression coefficients for this model help show how much each predictor changes the response variable. The dummy variable "Legendary" has an estimated regression coefficient shows how much a Pokemon's capture rate differs just based on legendary status. The type variables "Type1" and "Type2" were not used since they are categorical variables and these variables are not quantitative. Furthermore, this model provides the p-values of each variable. This can tell us the significance of each variable and whether I will need to reject the null hypothesis of each predictor. 
+
+Although, with this strong model there are still some flaws. A logistic model may have possibly been a better fit as it can include categorical and binary variables much better than that of my selected model. 
+
+# Results 
+
+This section will go over the findings of this analysis. 
+
+Regression Table (Figure 2)
+```{r, echo = FALSE}
+# Table to show MLR results
+capture_rate_predictors <- c("Health Points", "Attack", "Defence", "Special Attack", "Special Defence", "Speed", "Height", "Weight", "Legendary")
+
+estimated_regression_coefficients <- c(-0.606397, -0.346188, -0.477311, -0.401248, -0.476412, -0.493644,  0.135506, -0.001918, 6.198480)
+
+p_value <- c(3.52e-11, 2.06e-05, 7.73e-08, 5.09e-07, 7.48e-07, 2.74e-09, 0.957, 0.938,0.444)
+
+
+regression_table <- data.frame(capture_rate_predictors, estimated_regression_coefficients, p_value)
+regression_table %>% 
+  kbl %>%
+  kable_styling()
+```
+
+From the model in the previous section, in Figure 2 is a summary of the findings. This table includes all the regression coefficients and the p-values of each predictor. Majority of the regression estimates appear to be negative. Meaning as these predictors increase, the catch rate decreases. 
+
+
+Pokemon Type and Capture Rate (Figure 3)
+```{r, echo = FALSE}
+
+# Tables for all Pokemon types
+
+type1_normal <- pokemon_data %>%
+  filter(type1 == "normal")
+
+type1_fighting <- pokemon_data %>%
+  filter(type1 == "fighting")
+
+type1_flying <- pokemon_data %>%
+  filter(type1 == "flying")
+
+type1_poison <- pokemon_data %>%
+  filter(type1 == "poison")
+
+type1_ground <- pokemon_data %>%
+  filter(type1 == "ground")
+
+type1_rock <- pokemon_data %>%
+  filter(type1 == "rock")
+
+type1_bug <- pokemon_data %>%
+  filter(type1 == "bug")
+
+type1_ghost <- pokemon_data %>%
+  filter(type1 == "ghost")
+
+type1_steel <- pokemon_data %>%
+  filter(type1 == "steel")
+
+type1_fire <- pokemon_data %>%
+  filter(type1 == "fire")
+
+type1_water <- pokemon_data %>%
+  filter(type1 == "water")
+
+type1_grass <- pokemon_data %>%
+  filter(type1 == "grass")
+
+type1_electric <- pokemon_data %>%
+  filter(type1 == "electric")
+
+type1_psychic <- pokemon_data %>%
+  filter(type1 == "psychic")
+
+type1_ice <- pokemon_data %>%
+  filter(type1 == "ice")
+
+type1_dragon <- pokemon_data %>%
+  filter(type1 == "dragon")
+
+type1_dark <- pokemon_data %>%
+  filter(type1 == "dark")
+
+type1_fairy <- pokemon_data %>%
+  filter(type1 == "fairy")
+
+# average capture rate for each type1 & number of each type1
+
+normal_capture_rate_average <- mean(type1_normal$capture_rate)
+normal_sd <- sd(type1_normal$capture_rate)
+total_normal <- nrow(type1_normal)
+
+
+fighting_capture_rate_average <- mean(type1_fighting$capture_rate)
+fighting_sd <- sd(type1_fighting$capture_rate)
+total_fighting <- nrow(type1_fighting)
+
+
+flying_capture_rate_average <- mean(type1_flying$capture_rate)
+flying_sd <- sd(type1_flying$capture_rate)
+total_flying <- nrow(type1_flying)
+
+
+poison_capture_rate_average <- mean(type1_poison$capture_rate)
+poison_sd <- sd(type1_poison$capture_rate)
+total_poison <- nrow(type1_poison)
+
+
+ground_capture_rate_average <- mean(type1_ground$capture_rate)
+ground_sd <- sd(type1_ground$capture_rate)
+total_ground <- nrow(type1_ground)
+
+
+rock_capture_rate_average <- mean(type1_rock$capture_rate)
+rock_sd <- sd(type1_rock$capture_rate)
+total_rock <- nrow(type1_rock)
+
+
+bug_capture_rate_average <- mean(type1_bug$capture_rate)
+bug_sd <- sd(type1_bug$capture_rate)
+total_bug <- nrow(type1_bug)
+
+
+ghost_capture_rate_average <- mean(type1_ghost$capture_rate)
+ghost_sd <- sd(type1_ghost$capture_rate)
+total_ghost <- nrow(type1_ghost)
+
+
+steel_capture_rate_average <- mean(type1_steel$capture_rate)
+steel_sd <- sd(type1_steel$capture_rate)
+total_steel <- nrow(type1_steel)
+
+
+fire_capture_rate_average <- mean(type1_fire$capture_rate)
+fire_sd <- sd(type1_fire$capture_rate)
+total_fire <- nrow(type1_fire)
+
+
+water_capture_rate_average <- mean(type1_water$capture_rate)
+water_sd <- sd(type1_water$capture_rate)
+total_water <- nrow(type1_water)
+
+
+grass_capture_rate_average <- mean(type1_grass$capture_rate)
+grass_sd <- sd(type1_grass$capture_rate)
+total_grass <- nrow(type1_grass)
+
+
+electric_capture_rate_average <- mean(type1_electric$capture_rate)
+electric_sd <- sd(type1_electric$capture_rate)
+total_electric <- nrow(type1_electric)
+
+
+psychic_capture_rate_average <- mean(type1_psychic$capture_rate)
+psychic_sd <- sd(type1_psychic$capture_rate)
+total_psychic <- nrow(type1_psychic)
+
+
+ice_capture_rate_average <- mean(type1_ice$capture_rate)
+ice_sd <- sd(type1_ice$capture_rate)
+total_ice <- nrow(type1_ice)
+
+
+dragon_capture_rate_average <- mean(type1_dragon$capture_rate)
+dragon_sd <- sd(type1_dragon$capture_rate)
+total_dragon <- nrow(type1_dragon)
+
+
+dark_capture_rate_average <- mean(type1_dark$capture_rate)
+dark_sd <- sd(type1_dark$capture_rate)
+total_dark <- nrow(type1_dark)
+
+
+fairy_capture_rate_average <- mean(type1_fairy$capture_rate)
+fairy_sd <- sd(type1_fairy$capture_rate)
+total_fairy <- nrow(type1_fairy)
+
+# Table for Pokemon by type1
+
+type <- c("normal", "fighting", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water", "grass", "electric", "phychic", "ice", "dragon", "dark", "fairy")
+
+average_capture_rate <- c(normal_capture_rate_average, fighting_capture_rate_average, flying_capture_rate_average, poison_capture_rate_average, ground_capture_rate_average, rock_capture_rate_average, bug_capture_rate_average, ghost_capture_rate_average, steel_capture_rate_average, fire_capture_rate_average, water_capture_rate_average, grass_capture_rate_average, electric_capture_rate_average, psychic_capture_rate_average, ice_capture_rate_average, dragon_capture_rate_average, dark_capture_rate_average, fairy_capture_rate_average)
+
+number_of_pokemon <- c(total_normal, total_fighting, total_flying, total_poison, total_ground, total_rock, total_bug, total_ghost, total_steel, total_fire, total_water, total_grass, total_electric, total_psychic, total_ice, total_dragon, total_dark, total_fairy)
+
+capture_rate_standard_deviation <- c(normal_sd, fighting_sd, flying_sd, poison_sd, ground_sd, rock_sd, bug_sd, ghost_sd, steel_sd, fire_sd, water_sd, grass_sd, electric_sd, psychic_sd, ice_sd, dragon_sd, dark_sd, fairy_sd)
+
+type_capture_rate_table <- data.frame(type, number_of_pokemon, average_capture_rate, capture_rate_standard_deviation)
+
+
+type_capture_rate_table %>%
+  kbl () %>%
+  kable_styling()
+
+```
+
+In figure 3, the categorical variable of Pokemon Type is placed into a table with the mean capture rate of each type as well as the variance. It is clear that on average, dragon type Pokemon are the most difficult to capture.
+
+
+Pokemon Location & Capture Rate (Figure 4)
+```{r, echo = FALSE}
+# Tables for all locations 
+
+location_kanto <- pokemon_data %>%
+  filter(location == "Kanto")
+
+location_johto <- pokemon_data %>%
+  filter(location == "Johto")
+
+location_hoenn <- pokemon_data %>%
+  filter(location == "Hoenn")
+
+location_sinnoh <- pokemon_data %>%
+  filter(location == "Sinnoh")
+
+location_unova <- pokemon_data %>%
+  filter(location == "Unova")
+
+location_kalos <- pokemon_data %>%
+  filter(location == "Kalos")
+
+location_alola <- pokemon_data %>%
+  filter(location == "Alola")
+
+# Capture Rate Mean & Number of pokemon in region 
+
+
+kanto_average_capture_rate <- mean(location_kanto$capture_rate)
+kanto_sd <- sd(location_kanto$capture_rate)
+total_kanto <- nrow(location_kanto)
+
+
+johto_average_capture_rate <- mean(location_johto$capture_rate)
+johto_sd <- sd(location_johto$capture_rate)
+total_johto <- nrow(location_johto)
+
+hoenn_average_capture_rate <- mean(location_hoenn$capture_rate)
+hoenn_sd <- sd(location_hoenn$capture_rate)
+total_hoenn <- nrow(location_hoenn)
+
+sinnoh_average_capture_rate <- mean(location_sinnoh$capture_rate)
+sinnoh_sd <- sd(location_sinnoh$capture_rate)
+total_sinnoh <- nrow(location_sinnoh)
+
+
+unova_average_capture_rate <- mean(location_unova$capture_rate)
+unova_sd <- sd(location_unova$capture_rate)
+total_unova <- nrow(location_unova)
+
+
+kalos_average_capture_rate <- mean(location_kalos$capture_rate)
+kalos_sd <- sd(location_kalos$capture_rate)
+total_kalos <- nrow(location_kalos)
+
+
+alola_average_capture_rate <- mean(location_alola$capture_rate)
+alola_sd <- sd(location_alola$capture_rate)
+total_alola <- nrow(location_alola)
+
+
+# Table for location capture rate
+
+
+region <- c("Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola")
+
+regional_total <- c(total_kanto, total_johto, total_hoenn, total_sinnoh, total_unova, total_kalos, total_alola)
+
+average_capture_rate <- c(kanto_average_capture_rate, johto_average_capture_rate, hoenn_average_capture_rate, sinnoh_average_capture_rate, unova_average_capture_rate, kalos_average_capture_rate, alola_average_capture_rate)
+
+capture_rate_standard_deviation <- c(kanto_sd, johto_sd, hoenn_sd, sinnoh_sd, unova_sd, kalos_sd, alola_sd)
+
+region_table <- data.frame(region, regional_total, average_capture_rate, capture_rate_standard_deviation)
+
+
+region_table %>%
+  kbl %>%
+  kable_styling()
+
+```
+
+In figure 4, I have made a table of location and the respective mean capture rate and variance capture rate of each region. From an initial glance Pokemon located in the Sinnoh region are the most difficult to capture while Pokemon in the Hoenn region are the easiest to capture. This is based off the mean capture rate.
+
+
+Legendary Status & Capture Rate (Figure 5)
+```{r, echo = FALSE}
+
+# legendary & non-legendary tables
+
+legendary <- pokemon_data %>%
+  filter(is_legendary == 1)
+
+not_legendary <- pokemon_data %>%
+  filter(is_legendary == 0)
+
+# capture rate mean and number of rows
+
+legendary_capture_rate_avg<- mean(legendary$capture_rate)
+legendary_capture_rate_sd <- sd(legendary$capture_rate)
+total_legendary <- nrow(legendary)
+
+
+not_legendary_capture_rate_avg<- mean(not_legendary$capture_rate)
+not_legendary_capture_rate_sd <- sd(not_legendary$capture_rate)
+total_not_legendary <- nrow(not_legendary)
+
+# Dataframe
+
+
+status <- c("legendary", "non-legendary")
+total <- c(total_legendary, total_not_legendary)
+capture_rate_mean <- c(legendary_capture_rate_avg, not_legendary_capture_rate_avg)
+capture_rate_standard_deviation <- c(legendary_capture_rate_sd, not_legendary_capture_rate_sd)
+
+legendary_table <- data.frame(status, total, capture_rate_mean, capture_rate_standard_deviation)
+
+
+legendary_table %>%
+  kbl %>%
+  kable_styling()
+
+```
+Figure 5 shows the dummy variable "Legendary" and its respective mean and variance. Based off this, it is clear there is a massive difference between the capture rates of legendary and non-legendary Pokemon. There is an extremely large difference between their mean capture rates.
+
+# Discussion 
+
+Throughout this analysis, I have taken the data from Rounak Banik and have created a Multiple Linear Regression and a few summary tables to showcase my findings on how Pokemon characteristics affect their capture rate. Since Pokemon are from a fictional video game, the data Banik has collected is from the Pokedex. The Pokedex being a fictional encyclopedia which contains information of all Pokemon. Although, the Pokedex is fictional, its strength is that it has zero bias as the Pokedex is not subjective and only displays accurate data. 
+
+
+Figure 2 shows my findings from the model. This table provides the estimated regression coefficients of each predictor ($\beta_{i}$) and the p-values. 
+
+We see that majority of the estimated regression coefficients are negative. This means that as you increase the predictor by 1, the response variable capture rate decreases by the associated value of $\beta_{i}$. The predictors that fall into this category are: health points, attack, defense, special attack, special defense, speed and weight. Furthermore, as the value of these predictors increase, a Pokemon becomes much harder to capture. This is significant knowledge to have before going to capture a Pokemon. 
+
+The opposite is true for Pokemon with a positive estimated regression coefficient. In Figure 2, the predictors height and legendary have a positive $\beta_{i}$. On one hand we know that, taller Pokemon appear to be easier to capture in comparison to shorter Pokemon. While on the other hand, if a Pokemon is of legendary class, their capture rate increases by approximately 6.2. This is a dummy variable so nothing more can be learned.
+
+Moving onto the p-values, if the p-value of a predictor is less than 0.1, we will reject the null hypothesis and accept the alternate. The only predictors that have a p-value less than 0.1 include: health points, attack, defense, special attack, special defense, and speed. This means that for these variables, we reject the null hypothesis and accept that these variables influence the response variable of capture rate. We fail to reject the null hypothesis of the the predictors height, weight, and legendary. 
+
+Moving onto figures 3-5, these tables show us how the mean and variance of capture rate for for the variables type1, location and legendary respectively. From figure 3, on average poison type Pokemon are the easiest to capture while dragon type Pokemon are the hardest. Figure 4 shows that Pokemon from the Sinnoh region are the easiest to capture with Hoenn region Pokemon being the hardest. Finally table 5 tells us that on average, legendary Pokemon have a much lower capture rate than non-legendary Pokemon. Thus, legendary Pokemon are significantly harder to catch. 
+
+## Weaknesses and Next Steps
+
+Although this analysis went into detail, there are still are still a few weaknesses. To begin, the secondary type variable of Pokemon was not touched upon. This is an important weakness as it is very common for Pokemon to have two types and I did not analyze the effect of multiple types on capture rate. Additionally, another model could have been explored on top of multiple linear regression as there may be more findings. Finally, Pokemon are very popular throughout the world and there is a lot of Pokemon data available with other variables that I could have incorporated. For example, the data I used had all the Pokemon battle statistics except "evasiveness", which is the score of how well a Pokemon can dodge an attack. This predictor could have had a large impact on my results. Finally, more analysis could have been done with the categorical variables of location and type. 
+
+# Conclusion 
+
+Overall, throughout this analysis I have discussed how the capture rate of Pokemon vary based on several predictors. Through a multiple linear regression, I have shown which variables affect the capture rate of Pokemon and by how much. This is important because if an individual was to go after a specific Pokemon, they can plug in the the respective predictors into the model and determine how difficult a Pokemon is to capture. Additionally, I have looked at how the mean capture rate varies for the variables of primary type, location and legendary status. To wrap up, analyzing a Pokemon's characteristics can lead to a much more successful capture.
+
+# References
+
+Banik, Rounak. “The Complete Pokemon Dataset.” Kaggle, 29 Sept. 2017, www.kaggle.com/rounakbanik/pokemon. 
+
+“Base Stats and Battle Stats - Pokemon Sun &amp; Pokemon Moon Wiki Guide.” IGN, 9 Nov. 2016, www.ign.com/wikis/pokemon-sun-pokemon-moon/Base_Stats_and_Battle_Stats. 
+
+David. “How to Make Beautiful Tables in R.” R For the Rest of Us, 12 Nov. 2019, rfortherestofus.com/2019/11/how-to-make-beautiful-tables-in-r/. 
+
+“Serebii.net Games - Capturing Pokmon.” Serebii.net Header, www.serebii.net/games/capture.shtml. 
+
+“The Official Pokémon Website: Pokemon.com: Explore the World of Pokémon.” The Official Pokémon Website | Pokemon.com | Explore the World of Pokémon, www.pokemon.com/us/. 
+
+"The R Project for Statistical Computing", https://www.r-project.org/ 
+
+Wickham, Hadley. "ggplot2: Elegant Graphics for Data Analysis", Springer-Verlag New York, 2016. isbn 978-3-319-24277-4, https://ggplot2.tidyverse.org
+
+Wu, Changbao and Mary E. Thompson, "Sampling Theory and Practice", Springer
+
+Zhu, Hao. Create Awesome HTML Table with Knitr::Kable and KableExtra, 22 Oct. 2020, cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html. 
